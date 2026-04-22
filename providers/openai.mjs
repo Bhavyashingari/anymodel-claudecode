@@ -5,12 +5,23 @@
 // ── Request translation (Anthropic → OpenAI) ────────────
 
 export function translateRequest(anthropicBody) {
+  const isNewModel = anthropicBody.model?.includes('gpt-4o') || 
+                     anthropicBody.model?.includes('o1') || 
+                     anthropicBody.model?.includes('gpt-5');
+
   const openaiBody = {
     model: anthropicBody.model,
-    max_tokens: anthropicBody.max_tokens,
     stream: anthropicBody.stream || false,
     messages: [],
   };
+
+  if (anthropicBody.max_tokens) {
+    if (isNewModel) {
+      openaiBody.max_completion_tokens = anthropicBody.max_tokens;
+    } else {
+      openaiBody.max_tokens = anthropicBody.max_tokens;
+    }
+  }
 
   // System messages: Anthropic array → OpenAI system message
   if (anthropicBody.system) {
